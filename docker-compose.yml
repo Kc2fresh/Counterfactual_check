@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  django:
+    image: kc2fresh/backend
+    expose:
+      - 8000
+    env_file:
+      - ./backend/.env
+    command: gunicorn mainapp.wsgi:application --bind 0.0.0.0:8000  
+    
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+  db:
+    image: postgres:12.0-alpine
+    
+  react:
+    
+    image: kc2fresh/frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - django
+    command: serve -s build -l 3000
+  nginx:
+    restart: always
+    
+    
+    image: kc2fresh/nginx
+    ports:
+      - 80:80
+    depends_on:
+      - react
+      - django
+
+volumes:
+  postgres_data:
+  django_static_volume:
+  react_static_volume:
